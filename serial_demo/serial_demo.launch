@@ -1,0 +1,5 @@
+<launch>
+    <node pkg="serial_demo" name="serialPort" type="serialPort"></node>
+    <node pkg="serial_demo" name="receiver" type="receiver"></node>
+    <node pkg="serial_demo" name="transmitter" type="transmitter"></node>
+</launch>
