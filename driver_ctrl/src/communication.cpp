@@ -52,6 +52,7 @@ bool CheckFormat(uint8_t *msg, uint8_t size)
     if ((msg[0] != static_cast<uint8_t>(MSG_HEAD >> 8)) ||
         (msg[1] != static_cast<uint8_t>(MSG_HEAD & 0x00ff)))
     {
+        // ROS_INFO_STREAM("head error");
         return false;
     }
     if (CalcCheck(msg, size - 1) != msg[size - 1])
@@ -60,6 +61,7 @@ bool CheckFormat(uint8_t *msg, uint8_t size)
     }
     else
     {
+        // ROS_INFO_STREAM("check error");
         return true;
     }
 }
@@ -94,6 +96,9 @@ bool serial_tx_handle_function(driver_ctrl::ctrl_msg::Request &req,
     return true;
 }
 
+
+uint8_t buffer[3 * RX_SIZE];
+uint16_t end_bias = 0;
 bool serial_rx_function(driver_ctrl::fb_msg  &msg)
 {
     size_t n = ser.available();
@@ -101,55 +106,70 @@ bool serial_rx_function(driver_ctrl::fb_msg  &msg)
     {
         return false;
     }
-    uint8_t buffer[100];
-    n = ser.read(buffer, n);
-    if (n != RX_SIZE)
+    n = ser.read(buffer + end_bias, n);
+    end_bias += n;
+    uint16_t head_bias = 0;
+    while ((end_bias - head_bias) >= RX_SIZE)
     {
-        return false;
+        if (CheckFormat(buffer + head_bias, RX_SIZE))
+        {
+            union TmpData
+            {
+                float f32;
+                uint8_t u8[4];
+            } tmp;
+            uint16_t i = 2;
+            CopyMsg(buffer + i, tmp.u8, 4);
+            msg.speed_l = tmp.f32;
+            i += 4;
+            CopyMsg(buffer + i, tmp.u8, 4);
+            msg.speed_r = tmp.f32;
+            i += 4;
+            CopyMsg(buffer + i, tmp.u8, 4);
+            msg.odometry_l = tmp.f32;
+            i += 4;
+            CopyMsg(buffer + i, tmp.u8, 4);
+            msg.odometry_r = tmp.f32;
+            i += 4;
+            CopyMsg(buffer + i, tmp.u8, 4);
+            msg.gyro_x = tmp.f32;
+            i += 4;
+            CopyMsg(buffer + i, tmp.u8, 4);
+            msg.gyro_y = tmp.f32;
+            i += 4;
+            CopyMsg(buffer + i, tmp.u8, 4);
+            msg.gyro_z = tmp.f32;
+            i += 4;
+            CopyMsg(buffer + i, tmp.u8, 4);
+            msg.accel_x = tmp.f32;
+            i += 4;
+            CopyMsg(buffer + i, tmp.u8, 4);
+            msg.accel_y = tmp.f32;
+            i += 4;
+            CopyMsg(buffer + i, tmp.u8, 4);
+            msg.accel_z = tmp.f32;
+            i += 4;
+            CopyMsg(buffer + i, tmp.u8, 4);
+            msg.vin = tmp.f32;
+            for (i = 0; i < (end_bias - head_bias - RX_SIZE); i++)
+            {
+                buffer[i] = buffer[head_bias + RX_SIZE];
+            }
+            end_bias = end_bias - head_bias - RX_SIZE;
+            return true;
+        }
+        else
+        {
+            head_bias++;
+        }
     }
-    if (CheckFormat(buffer, n - 1) == false)
+    for (int i = 0; i < (end_bias - head_bias); i++)
     {
-        return false;
+        buffer[i] = buffer[head_bias];
     }
-    union TmpData
-    {
-        float f32;
-        uint8_t u8[4];
-    } tmp;
-    size_t i = 2;
-    CopyMsg(buffer + i, tmp.u8, 4);
-    msg.speed_l = tmp.f32;
-    i += 4;
-    CopyMsg(buffer + i, tmp.u8, 4);
-    msg.speed_r = tmp.f32;
-    i += 4;
-    CopyMsg(buffer + i, tmp.u8, 4);
-    msg.odometry_l = tmp.f32;
-    i += 4;
-    CopyMsg(buffer + i, tmp.u8, 4);
-    msg.odometry_r = tmp.f32;
-    i += 4;
-    CopyMsg(buffer + i, tmp.u8, 4);
-    msg.gyro_x = tmp.f32;
-    i += 4;
-    CopyMsg(buffer + i, tmp.u8, 4);
-    msg.gyro_y = tmp.f32;
-    i += 4;
-    CopyMsg(buffer + i, tmp.u8, 4);
-    msg.gyro_z = tmp.f32;
-    i += 4;
-    CopyMsg(buffer + i, tmp.u8, 4);
-    msg.accel_x = tmp.f32;
-    i += 4;
-    CopyMsg(buffer + i, tmp.u8, 4);
-    msg.accel_y = tmp.f32;
-    i += 4;
-    CopyMsg(buffer + i, tmp.u8, 4);
-    msg.accel_z = tmp.f32;
-    i += 4;
-    CopyMsg(buffer + i, tmp.u8, 4);
-    msg.vin = tmp.f32;
-    return true;
+    end_bias = end_bias - head_bias;
+    return false;
+
 }
 
 // bool serial_rx_function(serial_demo::serial_rx &msg)
@@ -212,7 +232,7 @@ int main(int argc, char** argv)
     driver_ctrl::fb_msg feedback_msg;
     ros::Publisher ser_rx = nh.advertise<driver_ctrl::fb_msg>("feedback_msg", 1);
     ros::ServiceServer ser_tx = nh.advertiseService("control_msg", serial_tx_handle_function);
-    ros::Rate looprate(100);
+    ros::Rate looprate(50);
 
     while (ros::ok())
     {
