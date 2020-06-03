@@ -3,6 +3,10 @@ project(driver_ctrl)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
 # add_compile_options(-std=c++11)
+find_package(catkin REQUIRED COMPONENTS message_generation roscpp std_msgs)
+add_message_files(FILES fb_msg.msg)
+add_service_files(FILES ctrl_msg.srv)
+generate_messages(DEPENDENCIES std_msgs)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
@@ -11,7 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   rospy
   serial
-  std_msg
+  std_msgs
 )
 
 ## System dependencies are found with CMake's conventions
@@ -106,7 +110,7 @@ find_package(catkin REQUIRED COMPONENTS
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES driver_ctrl
-#  CATKIN_DEPENDS roscpp rospy serial std_msg
+#  CATKIN_DEPENDS roscpp rospy serial std_msgs
 #  DEPENDS system_lib
 )
 
@@ -125,6 +129,10 @@ include_directories(
 # add_library(${PROJECT_NAME}
 #   src/${PROJECT_NAME}/driver_ctrl.cpp
 # )
+
+add_executable(communication src/communication.cpp)
+add_dependencies(communication driver_ctrl_generate_messages_cpp)
+target_link_libraries(communication ${catkin_LIBRARIES})
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
