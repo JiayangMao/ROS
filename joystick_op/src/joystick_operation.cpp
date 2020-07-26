@@ -86,7 +86,7 @@ void JoystickOp::JoyStickMsgHandler(const sensor_msgs::Joy::ConstPtr &joy)
 {
     _connect_count_down = 10;
     _control_msg.request.angular_velocity = joy->axes[0] * 30;
-    _control_msg.request.speed = (joy->axes[5] + 1) / 2;
+    _control_msg.request.speed = 1 - (joy->axes[5] + 1) / 2;
     if (joy->buttons[3] == 1)
     {
         _control_msg.request.speed *= (-1);
