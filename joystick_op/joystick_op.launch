@@ -1,0 +1,7 @@
+<launch>
+    <node pkg="joy" type="joy_node" name="joy_node">
+        <param name="~autorepeat_rate" value="50"/>
+    </node>
+    <node pkg="joystick_op" type="joystick_operation" name="joystick_operation"></node>
+    <node pkg="driver_ctrl" type="communication" name="communication"></node>
+</launch>
