@@ -179,7 +179,7 @@ uint16_t end_flag = 0;
 bool serial_rx_function(driver_ctrl::fb_msg &msg)
 {
     size_t n = ser.available();
-    if (n == 0)
+    if ((n == 0) || ((n + end_flag) >= sizeof(buffer)))
     {
         return false;
     }
