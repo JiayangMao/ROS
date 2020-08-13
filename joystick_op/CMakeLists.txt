@@ -130,7 +130,6 @@ include_directories(
 # )
 
 add_executable(joystick_operation src/joystick_operation.cpp)
-add_dependencies(joystick_operation joystick_op_generate_message_cpp)
 target_link_libraries(joystick_operation ${catkin_LIBRARIES})
 
 ## Add cmake target dependencies of the library

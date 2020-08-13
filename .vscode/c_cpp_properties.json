@@ -6,21 +6,15 @@
                 "limitSymbolsToIncludedHeaders": true
             },
             "includePath": [
-                "/home/buster/Documents/catkin_ws/devel/include/**",
+                "/home/buster/catkin_ws/devel/include/**",
                 "/opt/ros/melodic/include/**",
-                "/home/buster/Documents/catkin_ws/src/ar_test/include/**",
-                "/home/buster/Documents/catkin_ws/src/driver_ctrl/include/**",
-                "/home/buster/Documents/catkin_ws/src/serial_demo/include/**",
-                "/home/buster/Documents/catkin_ws/src/service_demo/include/**",
-                "/home/buster/Documents/catkin_ws/src/topic_demo/include/**",
                 "/usr/include/**"
             ],
             "name": "ROS",
             "intelliSenseMode": "gcc-x64",
             "compilerPath": "/usr/bin/gcc",
             "cStandard": "gnu11",
-            "cppStandard": "gnu++14",
-            "compileCommands": "/home/buster/Documents/catkin_ws/build/compile_commands.json"
+            "cppStandard": "gnu++14"
         }
     ],
     "version": 4

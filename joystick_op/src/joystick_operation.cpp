@@ -55,6 +55,12 @@ void JoystickOp::JoystickCountDown()
         {
             // joystick disconnected error handler
             ROS_INFO("Joystick disconnected");
+            _control_msg.request.angular_velocity = 0;
+            _control_msg.request.speed = 0;
+            if (!_joy_controller.call(_control_msg))
+            {
+                ROS_ERROR_ONCE("Failed to call car controller");
+            }
         }
     }
 }
@@ -85,15 +91,11 @@ bool JoystickOp::JoystickConnected()
 void JoystickOp::JoyStickMsgHandler(const sensor_msgs::Joy::ConstPtr &joy)
 {
     _connect_count_down = 10;
-    _control_msg.request.angular_velocity = -30 * joy->axes.at(0);
-    _control_msg.request.speed = joy->axes.at(1);
-    if (joy->buttons[3] == 1)
-    {
-        _control_msg.request.speed *= (-1);
-    }
+    _control_msg.request.angular_velocity = -60.0f * joy->axes.at(0);
+    _control_msg.request.speed = 0.3f * joy->axes.at(1);
     if (!_joy_controller.call(_control_msg))
     {
-        ROS_ERROR("Failed to call car controller");
+        ROS_ERROR_ONCE("Failed to call car controller");
     }
 }
 
