@@ -4,5 +4,5 @@
     </node>
     <node pkg="joystick_op" type="joystick_operation" name="joystick_operation"></node>
     <node pkg="driver_ctrl" type="communication" name="communication"></node>
-    <!-- <node pkg="rosbag" type="record" name="record" args=" -o joy.bag /joy"></node> -->
+    <node pkg="rosbag" type="record" name="joy_record" output="screen" args=" /joy /feedback_msg"></node>
 </launch>
