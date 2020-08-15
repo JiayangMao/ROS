@@ -4,5 +4,6 @@
     </node>
     <node pkg="joystick_op" type="joystick_operation" name="joystick_operation"></node>
     <node pkg="driver_ctrl" type="communication" name="communication"></node>
-    <node pkg="rosbag" type="record" name="joy_record" output="screen" args=" /joy /feedback_msg"></node>
+    <node pkg="gps" type="gps_reader.py" name="gps_reader"></node>
+    <node pkg="rosbag" type="record" name="joy_record" output="screen" args=" /joy /feedback_msg /gps_data"></node>
 </launch>

@@ -4,12 +4,19 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
-    {
-        "name": "ROS: Launch",
-        "type": "ros",
-        "request": "launch",
-        "target": "/home/buster/catkin_ws/src/joystick_op/joystick_op.launch"
-    },
+        {
+            "name": "Python: Current File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal"
+        },
+        {
+            "name": "ROS: Launch",
+            "type": "ros",
+            "request": "launch",
+            "target": "/home/buster/catkin_ws/src/joystick_op/joystick_op.launch"
+        },
         {
             "name": "ROS: Attach",
             "type": "ros",
