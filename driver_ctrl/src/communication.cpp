@@ -286,7 +286,7 @@ int main(int argc, char **argv)
     driver_ctrl::fb_msg feedback_msg;
     ros::Publisher ser_rx = nh.advertise<driver_ctrl::fb_msg>("feedback_msg", 1);
     ros::ServiceServer ser_tx = nh.advertiseService("control_msg", serial_tx_handle_function);
-    ros::Rate looprate(50);
+    ros::Rate looprate(20);
 
     while (ros::ok())
     {

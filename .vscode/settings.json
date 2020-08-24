@@ -3,5 +3,9 @@
         "/home/buster/catkin_ws/devel/lib/python2.7/dist-packages",
         "/opt/ros/melodic/lib/python2.7/dist-packages"
     ],
-    "cmake.configureOnOpen": true
+    "cmake.configureOnOpen": true,
+    "python.analysis.extraPaths": [
+        "/home/buster/catkin_ws/devel/lib/python2.7/dist-packages",
+        "/opt/ros/melodic/lib/python2.7/dist-packages"
+    ]
 }

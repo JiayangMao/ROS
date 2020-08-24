@@ -91,8 +91,8 @@ bool JoystickOp::JoystickConnected()
 void JoystickOp::JoyStickMsgHandler(const sensor_msgs::Joy::ConstPtr &joy)
 {
     _connect_count_down = 10;
-    _control_msg.request.angular_velocity = -60.0f * joy->axes.at(0);
-    _control_msg.request.speed = 0.3f * joy->axes.at(1);
+    _control_msg.request.angular_velocity = -80.0f * joy->axes.at(0);
+    _control_msg.request.speed = 0.5f * joy->axes.at(4);
     if (!_joy_controller.call(_control_msg))
     {
         ROS_ERROR_ONCE("Failed to call car controller");

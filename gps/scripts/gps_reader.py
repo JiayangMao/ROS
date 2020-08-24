@@ -34,12 +34,12 @@ class GPS_reader:
             sum_check ^= ord(c)
         if (int(data[-4:-2], 16) != sum_check):
             return False
-        # rospy.loginfo(data)
+        rospy.logdebug(data)
         data = data.split(",")
         try:
-            self.nav_state.latitude = float(data[2])
-            self.nav_state.longitude = float(data[4])
-            self.nav_state.status.status = self.nav_status_dict[data[6]]
+            self.nav_state.latitude = float(data[2][0:3]) + float(data[2][3:]) / 60
+            self.nav_state.longitude = float(data[4][0:3]) + float(data[4][3:]) / 60
+            self.nav_state.status.status = self.nav_state.status.STATUS_GBAS_FIX
             self.nav_state.altitude = float(data[9])
             if data[3] == "S":
                 self.nav_state.latitude *= -1
