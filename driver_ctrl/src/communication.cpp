@@ -15,6 +15,7 @@
 #include <driver_ctrl/ctrl_msg.h>
 
 #include <stdint.h>
+#include <string>
 
 /**
  * @brief serial port for communicating with tricycle
@@ -260,10 +261,17 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "communication");
     ros::NodeHandle nh;
 
+    std::string port;
+    int baudrate;
+    float control_rate;
+    nh.param<std::string>("port", port, "/dev/ttyUSB0");
+    nh.param<int>("baudrate", baudrate, 115200);
+    nh.param<float>("control_rate", control_rate, 20.0f);
+
     try
     {
-        ser.setPort("/dev/ttyUSB0");
-        ser.setBaudrate(115200);
+        ser.setPort(port);
+        ser.setBaudrate(baudrate);
         serial::Timeout t = serial::Timeout::simpleTimeout(1000);
         ser.setTimeout(t);
         ser.open();
@@ -286,7 +294,7 @@ int main(int argc, char **argv)
     driver_ctrl::fb_msg feedback_msg;
     ros::Publisher ser_rx = nh.advertise<driver_ctrl::fb_msg>("feedback_msg", 1);
     ros::ServiceServer ser_tx = nh.advertiseService("control_msg", serial_tx_handle_function);
-    ros::Rate looprate(20);
+    ros::Rate looprate(control_rate);
 
     while (ros::ok())
     {

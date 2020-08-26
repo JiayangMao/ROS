@@ -9,15 +9,14 @@ class GPS_reader:
         rospy.init_node("gps_reader", anonymous=True)
         self.pub = rospy.Publisher(
             "gps_data", NavSatFix, queue_size=1)
-        self.ser = serial.Serial("/dev/ttyUSB1", 38400, timeout=1)
+        self.port = rospy.get_param("~port", "/dev/ttyUSB1")
+        self.baudrate = rospy.get_param("~baudrate", 38400)
+        self.ser = serial.Serial(self.port, self.baudrate, timeout=1)
         self.nav_state = NavSatFix()
         '''
         self.nav_state.position_covariance_type = 
         self.nav_state.position_covariance = 
         '''
-        self.nav_status_dict = {"0": self.nav_state.status.STATUS_FIX,
-                                "1": self.nav_state.status.STATUS_SBAS_FIX,
-                                "2": self.nav_state.status.STATUS_GBAS_FIX}
 
     def loop(self):
         while not rospy.is_shutdown():

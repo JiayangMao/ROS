@@ -49,7 +49,7 @@ void IMU::Update(double dt = 0.05)
     double q0q1, q0q2, q0q3, q1q1, q1q2, q1q3, q2q2, q2q3, q3q3;
     double yaw;
 
-    halft = 0.5f * dt;
+    halft = 0.5 * dt;
     ax = this->accel[0];
     ay = this->accel[1];
     az = this->accel[2];
@@ -69,7 +69,7 @@ void IMU::Update(double dt = 0.05)
 
     if ((ax != 0.0f) || (ay != 0.0f) || (az != 0.0f))
     {
-        norm = sqrt(ax * ax + ay * ay + az * az);
+        norm = sqrtf64(ax * ax + ay * ay + az * az);
         ax /= norm;
         ay /= norm;
         az /= norm;
@@ -98,7 +98,7 @@ void IMU::Update(double dt = 0.05)
     quat[3] += (_q0 * gz + _q1 * gy - _q2 * gx) * halft;
 
     norm = sqrtf64(quat[0] * quat[0] + quat[1] * quat[1] +
-                 quat[2] * quat[2] + quat[3] * quat[3]);
+                   quat[2] * quat[2] + quat[3] * quat[3]);
     quat[0] /= norm;
     quat[1] /= norm;
     quat[2] /= norm;
@@ -115,6 +115,10 @@ void IMU::Update(double dt = 0.05)
     rMat[2][0] = 2.0f * (q1q3 + -q0q2);
     rMat[2][1] = 2.0f * (q2q3 - -q0q1);
     rMat[2][2] = 1.0f - 2.0f * q1q1 - 2.0f * q2q2;
+
+//     ROS_INFO("yaw = %f", atan2f64(rMat[1][0], rMat[0][0]) * 57.29578);
+//     ROS_INFO("pitch = %f", -asinf64(rMat[2][0]) * 57.29578);
+//     ROS_INFO("roll = %f", atan2f64(rMat[2][1], rMat[2][2]) * 57.29578);
 }
 
 void IMU::GetQuat(double &w, double &x, double &y, double &z)
