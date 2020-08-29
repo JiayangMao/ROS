@@ -5,6 +5,11 @@
 #include <driver_ctrl/fb_msg.h>
 #include <sensor_msgs/Imu.h>
 
+/**
+ * @brief The IMU data class which receives angular velocity and 
+ *        linear acceleration datas to calculate the quaternion.
+ * 
+ */
 class IMU
 {
 public:
@@ -17,18 +22,23 @@ public:
     void GetAccel(double &x, double &y, double &z);
 
 private:
-    double const Ki = 0.001f;
-    double const Kp = 0.4f;
+    double const Ki = 0.001f; // the integral parameter of the filter
+    double const Kp = 0.4f;   // the proportional parameter of the filter
 
-    double accel[3], gyro[3];
-    double quat[4];
+    double accel[3], gyro[3]; // the received angular velocity and linear acceleration datas
+    double quat[4];           // the quaternion datas
     double rMat[3][3];
 
+    // the integral error of x, y and z axises
     double exInt;
     double eyInt;
     double ezInt;
 };
 
+/**
+ * @brief Construct a new IMU::IMU object
+ * 
+ */
 IMU::IMU()
 {
     quat[0] = 1;
@@ -37,6 +47,13 @@ IMU::IMU()
     quat[3] = 0;
 }
 
+/**
+ * @brief Update the quaternion after receiving the 
+ *        angular velocity and linear acceleration datas
+ * 
+ * @param dt The update frequency of the IMU data, 
+ *           unit of which is second
+ */
 void IMU::Update(double dt = 0.05)
 {
     double norm;
@@ -116,11 +133,19 @@ void IMU::Update(double dt = 0.05)
     rMat[2][1] = 2.0f * (q2q3 - -q0q1);
     rMat[2][2] = 1.0f - 2.0f * q1q1 - 2.0f * q2q2;
 
-//     ROS_INFO("yaw = %f", atan2f64(rMat[1][0], rMat[0][0]) * 57.29578);
-//     ROS_INFO("pitch = %f", -asinf64(rMat[2][0]) * 57.29578);
-//     ROS_INFO("roll = %f", atan2f64(rMat[2][1], rMat[2][2]) * 57.29578);
+    //     ROS_INFO("yaw = %f", atan2f64(rMat[1][0], rMat[0][0]) * 57.29578);
+    //     ROS_INFO("pitch = %f", -asinf64(rMat[2][0]) * 57.29578);
+    //     ROS_INFO("roll = %f", atan2f64(rMat[2][1], rMat[2][2]) * 57.29578);
 }
 
+/**
+ * @brief Get the current quaternion datas
+ * 
+ * @param w 
+ * @param x 
+ * @param y 
+ * @param z 
+ */
 void IMU::GetQuat(double &w, double &x, double &y, double &z)
 {
     w = quat[0];
@@ -129,6 +154,13 @@ void IMU::GetQuat(double &w, double &x, double &y, double &z)
     z = quat[3];
 }
 
+/**
+ * @brief Set the current angular velocity datas
+ * 
+ * @param x 
+ * @param y 
+ * @param z 
+ */
 void IMU::SetGyro(double x, double y, double z)
 {
     gyro[0] = x;
@@ -136,6 +168,13 @@ void IMU::SetGyro(double x, double y, double z)
     gyro[2] = z;
 }
 
+/**
+ * @brief Set the current linear acceleration datas
+ * 
+ * @param x 
+ * @param y 
+ * @param z 
+ */
 void IMU::SetAccel(double x, double y, double z)
 {
     accel[0] = x;
@@ -143,6 +182,13 @@ void IMU::SetAccel(double x, double y, double z)
     accel[2] = z;
 }
 
+/**
+ * @brief Get the current angular velocity datas
+ * 
+ * @param x 
+ * @param y 
+ * @param z 
+ */
 void IMU::GetGyro(double &x, double &y, double &z)
 {
     x = gyro[0];
@@ -150,6 +196,13 @@ void IMU::GetGyro(double &x, double &y, double &z)
     z = gyro[2];
 }
 
+/**
+ * @brief Set the current linear acceleration datas
+ * 
+ * @param x 
+ * @param y 
+ * @param z 
+ */
 void IMU::GetAccel(double &x, double &y, double &z)
 {
     x = accel[0];
@@ -157,6 +210,10 @@ void IMU::GetAccel(double &x, double &y, double &z)
     z = accel[2];
 }
 
+/**
+ * @brief The IMU data processing node 
+ * 
+ */
 class IMUNode
 {
 public:
@@ -173,12 +230,23 @@ private:
     sensor_msgs::Imu imu_msg;
 };
 
+/**
+ * @brief Construct a new IMUNode::IMUNode object
+ * 
+ */
 IMUNode::IMUNode()
 {
     feedback_sub = nh.subscribe("feedback_msg", 1, &IMUNode::FeedBackHandler, this);
     imu_pub = nh.advertise<sensor_msgs::Imu>("imu_msg", 1);
 }
 
+/**
+ * @brief After receiving a feedback message from car controller node,
+ *        this call back function is called to update the quaternion datas
+ *        and publishes them.
+ * 
+ * @param msg 
+ */
 void IMUNode::FeedBackHandler(const driver_ctrl::fb_msg::ConstPtr &msg)
 {
     imu.SetGyro(msg->gyro_x, msg->gyro_y, msg->gyro_z);
@@ -196,6 +264,13 @@ void IMUNode::FeedBackHandler(const driver_ctrl::fb_msg::ConstPtr &msg)
     imu_pub.publish(imu_msg);
 }
 
+/**
+ * @brief 
+ * 
+ * @param argc 
+ * @param argv 
+ * @return int 
+ */
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "my_imu");
