@@ -148,6 +148,8 @@ void TxCmd(CtrlCmd cmd, CarStateCmd state)
     ser.write(tx_data, TX_SIZE);
 }
 
+float linear_velocity, angular_velocity;
+int out_time = 0;
 /**
  * @brief control car according to the subscribed service
  * 
@@ -160,8 +162,9 @@ void TxCmd(CtrlCmd cmd, CarStateCmd state)
 bool serial_tx_handle_function(driver_ctrl::ctrl_msg::Request &req,
                                driver_ctrl::ctrl_msg::Response &res)
 {
-    TxCmd(cmd_speed_ctrl, req.speed);
-    TxCmd(cmd_gyro_ctrl, req.angular_velocity);
+    out_time = 1000;
+    linear_velocity = req.speed;
+    angular_velocity = req.angular_velocity;
     return true;
 }
 
@@ -267,7 +270,8 @@ int main(int argc, char **argv)
     nh.param<std::string>("port", port, "/dev/ttyUSB0");
     nh.param<int>("baudrate", baudrate, 115200);
     nh.param<float>("control_rate", control_rate, 20.0f);
-
+    linear_velocity = 0;
+    angular_velocity = 0;
     try
     {
         ser.setPort(port);
@@ -299,7 +303,18 @@ int main(int argc, char **argv)
     while (ros::ok())
     {
         ros::spinOnce();
-        TxCmd(cmd_car_state, car_state_cmd_heartbeat);
+        if (out_time > 0)
+        {
+            out_time -= static_cast<float>(1000.0 / control_rate);
+        }
+        else
+        {
+            linear_velocity = 0;
+            angular_velocity = 0;
+        }
+        
+            TxCmd(cmd_speed_ctrl, linear_velocity);
+            TxCmd(cmd_gyro_ctrl, angular_velocity);
         if (serial_rx_function(feedback_msg))
         {
             ser_rx.publish(feedback_msg);

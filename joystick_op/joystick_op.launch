@@ -1,6 +1,6 @@
 <launch>
     <node pkg="joy" type="joy_node" name="joy_node">
-        <param name="~autorepeat_rate" value="50"/>
+        <param name="~autorepeat_rate" value="10"/>
     </node>
 
     <node pkg="joystick_op" type="joystick_operation" name="joystick_operation"></node>
@@ -8,7 +8,7 @@
     <node pkg="driver_ctrl" type="communication" name="communication">
         <param name="port" value="/dev/ttyUSB0"/>
         <param name="baudrate" value="115200"/>
-        <param name="control_rate" value="20.0"/>
+        <param name="control_rate" value="10"/>
     </node>
 
     <node pkg="my_imu" type="my_imu" name="my_imu"></node>
