@@ -5,7 +5,7 @@
 
     <node pkg="joystick_op" type="joystick_operation" name="joystick_operation"></node>
     
-    <node pkg="driver_ctrl" type="communication" name="communication">
+    <node pkg="driver_ctrl" type="communication" name="communication" output="screen">
         <param name="port" value="/dev/ttyUSB0"/>
         <param name="baudrate" value="115200"/>
         <param name="control_rate" value="10"/>

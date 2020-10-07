@@ -9,8 +9,8 @@
     <node pkg="my_imu" type="my_imu" name="my_imu"></node>
 
     <node pkg="server_communication" type="server_communication.py" name="server_communication" output="screen">
-        <param name="~server_ip" value="192.168.1.100"/>
-        <!-- <param name="~server_ip" value="101.132.135.141"/> -->
+        <!-- <param name="~server_ip" value="192.168.1.100"/> -->
+        <param name="~server_ip" value="101.132.135.141"/>
         <param name="~server_port" value="31415"/>
         <param name="~report_rate" value="10"/>
     </node>

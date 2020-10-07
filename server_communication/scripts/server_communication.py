@@ -43,6 +43,7 @@ class car_client:
             if ctrl_msg is not None:
                 try:
                     ctrl_msg = ctrl_msg.split(",")
+                    rospy.loginfo(str(ctrl_msg))
                     linear_velocity = float(ctrl_msg[0]) * 0.5
                     angular_velocity = float(ctrl_msg[1]) * (-80)
                     if not self.car_ctrl(linear_velocity, angular_velocity):

@@ -10,6 +10,7 @@
  */
 #include <ros/ros.h>
 #include <serial/serial.h>
+#include <std_msgs/String.h>
 
 #include <driver_ctrl/fb_msg.h>
 #include <driver_ctrl/ctrl_msg.h>
@@ -67,6 +68,31 @@ void CopyMsg(uint8_t *from, uint8_t *to, uint8_t size)
     {
         to[size] = from[size];
     }
+}
+
+/**
+ * @brief split a string to a list
+ * 
+ * @param s origin string to be splited
+ * @param v target string vector to keep the result
+ * @param c the separator to use when splitting the string
+ */
+void SplitString(const std::string &s,
+                 std::vector<std::string> &v,
+                 const std::string &c)
+{
+    std::string::size_type pos1, pos2;
+    pos2 = s.find(c);
+    pos1 = 0;
+    while (std::string::npos != pos2)
+    {
+        v.push_back(s.substr(pos1, pos2 - pos1));
+
+        pos1 = pos2 + c.size();
+        pos2 = s.find(c, pos1);
+    }
+    if (pos1 != s.length())
+        v.push_back(s.substr(pos1));
 }
 
 /**
@@ -172,84 +198,44 @@ uint8_t buffer[3 * RX_SIZE];
 uint16_t end_flag = 0;
 
 /**
- * @brief decode datas received from the controller, if there is a complete
- *        set of data in buffer, wite data in message and return true
+ * @brief decode datas received from the controller,
+ *        if there is complete, wite data in message and return true
  * 
  * @param msg pointer of the message to be released,
  *            including state feedback of the tricycle
- * @return true if the buffer contains a complete set of data
+ * @return true if the data received is complete
  * @return false 
  */
 bool serial_rx_function(driver_ctrl::fb_msg &msg)
 {
-    size_t n = ser.available();
-    if ((n == 0) || ((n + end_flag) >= sizeof(buffer)))
+    std::string rx_data;
+    size_t rx_size = ser.readline(rx_data);
+    if (rx_data[0] != '#' || rx_data[rx_size - 2] != '*' || rx_size > 100)
     {
+        ROS_INFO("FORMAT ERROR: %s", rx_data.c_str());
         return false;
     }
-    n = ser.read(buffer + end_flag, n);
-    end_flag += n;
-    uint16_t head_flag = 0;
-    while ((end_flag - head_flag) >= RX_SIZE)
+    rx_data.erase(rx_data.begin());
+    std::vector<std::string> data_list;
+    SplitString(rx_data, data_list, ",");
+    if (data_list.size() != 12)
     {
-        if (CheckFormat(buffer + head_flag, RX_SIZE))
-        {
-            union TmpData
-            {
-                float f32;
-                uint8_t u8[4];
-            } tmp;
-            uint16_t i = 2;
-            CopyMsg(buffer + i, tmp.u8, 4);
-            msg.speed_l = tmp.f32;
-            i += 4;
-            CopyMsg(buffer + i, tmp.u8, 4);
-            msg.speed_r = tmp.f32;
-            i += 4;
-            CopyMsg(buffer + i, tmp.u8, 4);
-            msg.odometry_l = tmp.f32;
-            i += 4;
-            CopyMsg(buffer + i, tmp.u8, 4);
-            msg.odometry_r = tmp.f32;
-            i += 4;
-            CopyMsg(buffer + i, tmp.u8, 4);
-            msg.gyro_x = tmp.f32;
-            i += 4;
-            CopyMsg(buffer + i, tmp.u8, 4);
-            msg.gyro_y = tmp.f32;
-            i += 4;
-            CopyMsg(buffer + i, tmp.u8, 4);
-            msg.gyro_z = tmp.f32;
-            i += 4;
-            CopyMsg(buffer + i, tmp.u8, 4);
-            msg.accel_x = tmp.f32;
-            i += 4;
-            CopyMsg(buffer + i, tmp.u8, 4);
-            msg.accel_y = tmp.f32;
-            i += 4;
-            CopyMsg(buffer + i, tmp.u8, 4);
-            msg.accel_z = tmp.f32;
-            i += 4;
-            CopyMsg(buffer + i, tmp.u8, 4);
-            msg.vin = tmp.f32;
-            for (i = 0; i < (end_flag - head_flag - RX_SIZE); i++)
-            {
-                buffer[i] = buffer[head_flag + RX_SIZE];
-            }
-            end_flag = end_flag - head_flag - RX_SIZE;
-            return true;
-        }
-        else
-        {
-            head_flag++;
-        }
+        ROS_INFO("DATA SIZE ERROR: %d", static_cast<int>(data_list.size()));
+        return false;
     }
-    for (int i = 0; i < (end_flag - head_flag); i++)
-    {
-        buffer[i] = buffer[head_flag];
-    }
-    end_flag = end_flag - head_flag;
-    return false;
+    msg.speed_l = std::stof(data_list[0]);
+    msg.speed_r = std::stof(data_list[1]);
+    msg.odometry_l = std::stof(data_list[2]);
+    msg.odometry_r = std::stof(data_list[3]);
+    msg.gyro_x = std::stof(data_list[4]);
+    msg.gyro_y = std::stof(data_list[5]);
+    msg.gyro_z = std::stof(data_list[6]);
+    msg.accel_x = std::stof(data_list[7]);
+    msg.accel_y = std::stof(data_list[8]);
+    msg.accel_z = std::stof(data_list[9]);
+    msg.vin = std::stof(data_list[10]);
+
+    return true;
 }
 
 /**
@@ -294,7 +280,6 @@ int main(int argc, char **argv)
         return -1;
     }
 
-    TxCmd(cmd_car_state, car_state_cmd_start);
     driver_ctrl::fb_msg feedback_msg;
     ros::Publisher ser_rx = nh.advertise<driver_ctrl::fb_msg>("feedback_msg", 1);
     ros::ServiceServer ser_tx = nh.advertiseService("control_msg", serial_tx_handle_function);
@@ -312,9 +297,9 @@ int main(int argc, char **argv)
             linear_velocity = 0;
             angular_velocity = 0;
         }
-        
-            TxCmd(cmd_speed_ctrl, linear_velocity);
-            TxCmd(cmd_gyro_ctrl, angular_velocity);
+
+        TxCmd(cmd_speed_ctrl, linear_velocity);
+        TxCmd(cmd_gyro_ctrl, angular_velocity);
         if (serial_rx_function(feedback_msg))
         {
             ser_rx.publish(feedback_msg);
