@@ -218,7 +218,7 @@ bool serial_rx_function(driver_ctrl::fb_msg &msg)
     rx_data.erase(rx_data.begin());
     std::vector<std::string> data_list;
     SplitString(rx_data, data_list, ",");
-    if (data_list.size() != 12)
+    if (data_list.size() != 9)
     {
         ROS_INFO("DATA SIZE ERROR: %d", static_cast<int>(data_list.size()));
         return false;
@@ -227,13 +227,12 @@ bool serial_rx_function(driver_ctrl::fb_msg &msg)
     msg.speed_r = std::stof(data_list[1]);
     msg.odometry_l = std::stof(data_list[2]);
     msg.odometry_r = std::stof(data_list[3]);
-    msg.gyro_x = std::stof(data_list[4]);
-    msg.gyro_y = std::stof(data_list[5]);
-    msg.gyro_z = std::stof(data_list[6]);
-    msg.accel_x = std::stof(data_list[7]);
-    msg.accel_y = std::stof(data_list[8]);
-    msg.accel_z = std::stof(data_list[9]);
-    msg.vin = std::stof(data_list[10]);
+    msg.roll = std::stof(data_list[4]);
+    msg.pitch = std::stof(data_list[5]);
+    msg.yaw = std::stof(data_list[6]);
+    msg.angular_velocity = std::stof(data_list[7]);
+
+    
 
     return true;
 }
